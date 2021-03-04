@@ -7,6 +7,7 @@ import numpy as np
 # get the most recent log file
 list_of_files = glob.glob('../files/logs/*.npy')
 latest_file = max(list_of_files, key=os.path.getctime)
+print(latest_file)
 
 data = np.load(latest_file)
 states = data['states'][0, [2, 5], :] # get z_pos and z_vel data

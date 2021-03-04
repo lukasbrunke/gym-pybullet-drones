@@ -33,7 +33,6 @@ class SYSID_controller():
         """int: number of iterations"""
         self.period = period
         """int: period of the input oscillation"""
-        self.K_lqr = np.array([-3.0406, -3.8247])
 
         self.reset()
 

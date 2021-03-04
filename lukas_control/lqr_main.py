@@ -12,7 +12,7 @@ from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.utils.utils import sync
 from lqr_controller import LQR
 
-DURATION = 50
+DURATION = 10
 """int: The duration of the simulation in seconds."""
 GUI = False
 """bool: Whether to use PyBullet graphical interface."""
@@ -41,6 +41,9 @@ if __name__ == "__main__":
     #### Initialize the controller #############################
     control_frequency = 50 # in Hz
     K_lqr = np.genfromtxt("sysid_data/K.csv", delimiter=",")
+    A = np.genfromtxt("sysid_data/A.csv", delimiter=",")
+    B = np.genfromtxt("sysid_data/B.csv", delimiter=",")
+    B = np.reshape(B, (B.shape[0], 1))
     CTRL = LQR(ENV, K_lqr)
 
     # Different frequencies for control and physics
@@ -56,7 +59,9 @@ if __name__ == "__main__":
     OBS = ENV.reset()
     STATE = OBS["0"]["state"]
 
-    z_state = STATE[[2, 5]]
+    linear_state = np.zeros((DURATION * control_frequency, 2))
+    z_state = STATE[[2, 12]]
+    linear_state[0, :] = z_state
     z_state[0] -= z_pos_init
     ACTION["0"], control_input = CTRL.compute_control(z_state)
 
@@ -73,11 +78,15 @@ if __name__ == "__main__":
 
         #### Compute control #######################################
         if i % control_steps == 0:
+            j = int(i / control_steps)
+
             STATE = OBS["0"]["state"]
 
-            z_state = STATE[[2, 5]]
+            z_state = STATE[[2, 12]]
             z_state[0] -= z_pos_init
             ACTION["0"], control_input = CTRL.compute_control(z_state)
+            if j < DURATION * control_frequency - 1:
+                linear_state[j + 1, :] = A @ linear_state[j, :] + B @ np.array([control_input])
 
             #### Log the simulation ####################################
             LOGGER.log(drone=0, timestamp=i/common_frequency, state=STATE, control_input=control_input)
