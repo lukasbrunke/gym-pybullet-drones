@@ -24,19 +24,14 @@ if __name__ == "__main__":
     #### Create the ENVironment ################################
     # specify initial state
     z_pos_init = 3.0
-    z_pos_init_offset = 1.0
+    z_pos_init_offset = -2.0
     initial_state = np.array([[0.0, 0.0, z_pos_init + z_pos_init_offset]])
     # specify initial velocity
     z_vel_init = 0.0
-    z_vel_init_offset = 1.0
+    z_vel_init_offset = -1.0
 
     ENV = CtrlAviary(gui=GUI, record=RECORD, initial_xyzs=initial_state)
     PYB_CLIENT = ENV.getPyBulletClient()
-
-    # set initial velocity (not exposed yet)
-    # drone_id  = 0 # single agent
-    # # p.resetBaseVelocity(drone_id, [x,y,z], [wx, wy,wz], physicsClientId=PYB_CLIENT)
-    # p.resetBaseVelocity(drone_id, [0.0, 0.0, z_vel_init + z_vel_init_offset], [0.0, 0.0, 0.0], physicsClientId=PYB_CLIENT)
 
     #### Initialize the controller #############################
     control_frequency = 50 # in Hz
@@ -57,6 +52,14 @@ if __name__ == "__main__":
     #### Initialize the ACTION #################################
     ACTION = {}
     OBS = ENV.reset()
+    STATE = OBS["0"]["state"]
+
+    # set initial velocity (not exposed yet)
+    drone_id  = ENV.DRONE_IDS[0] # single agent
+    # # p.resetBaseVelocity(drone_id, [x,y,z], [wx, wy,wz], physicsClientId=PYB_CLIENT)
+    p.resetBaseVelocity(drone_id, [0.0, 0.0, z_vel_init + z_vel_init_offset], [0.0, 0.0, 0.0], physicsClientId=PYB_CLIENT)
+    ACTION["0"] = np.array([0.0, 0.0, 0.0, 0.0])
+    OBS, _, _, _ = ENV.step(ACTION)
     STATE = OBS["0"]["state"]
 
     linear_state = np.zeros((DURATION * control_frequency, 2))

@@ -90,3 +90,10 @@ K = dlqr(A, B, Q, R);
 K = - K
 writematrix(K, 'sysid_data/K.csv');
 
+
+%% Determine w
+w = max(abs([states(1,:), states(2, :)] - [X_sim(1, :), X_sim(2, :)]));
+
+
+
+
